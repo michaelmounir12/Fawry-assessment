@@ -36,13 +36,12 @@ class Cart {
     }
 
 
-    public List<Shippable> getShippableItems() {
+    public List<CartItem> getShippableItems() {
         return items.values().stream()
-                .map(CartItem::getProduct)
-                .filter(p -> p instanceof Shippable)
-                .map(p -> (Shippable) p)
+                .filter(item -> item.getProduct() instanceof Shippable)
                 .collect(Collectors.toList());
     }
+
     public void eraseProducts(){
         items.clear();
     }

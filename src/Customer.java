@@ -19,8 +19,13 @@ class Customer {
 
         double subtotal = cart.getSubtotal();
         double shippingFees = cart.getShippableItems().stream()
-                .mapToDouble(Shippable::getWeight)
-                .sum() * 0.25; // shipping rate per kg
+                .mapToDouble(item -> {
+                    Product product = item.getProduct();
+                    double unitWeight = ((Shippable) product).getWeight();
+                    return unitWeight * item.getQuantity(); // weight × quantity
+
+                })
+                .sum() * 0.25; // rate per kg
 
         double total = subtotal + shippingFees;
         //filter expired items
@@ -44,17 +49,14 @@ class Customer {
         balance -= total;
 
         // trigger shipping
-        List<Shippable> toShip = cart.getShippableItems();
+        List<CartItem> toShip = cart.getShippableItems();
         if (!toShip.isEmpty()) {
             new ShippingService().ship(toShip);
         }
-        cart.eraseProducts();
+
         // print receipt
-        System.out.println("Checkout Summary:");
-        System.out.printf("Subtotal: %.2f\n", subtotal);
-        System.out.printf("Shipping: %.2f\n", shippingFees);
-        System.out.printf("Total Paid: %.2f\n", total);
-        System.out.printf("Balance Left: %.2f\n", balance);
+        printCheckoutReceipt(cart.getItems(),shippingFees,subtotal);
+        cart.eraseProducts();
     }
 
     public Cart getCart() {
@@ -63,5 +65,22 @@ class Customer {
 
     public double getBalance() {
         return balance;
+    }
+    public static void printCheckoutReceipt(List<CartItem> items, double shippingFee,double subtotal) {
+        System.out.println("** Checkout receipt **");
+
+        for (CartItem item : items) {
+            Product product = item.getProduct();
+
+            double itemPrice = product.getPrice() * item.getQuantity();
+            System.out.printf("%dx %s %.0f\n", item.getQuantity(), product.getName(), itemPrice);
+
+        }
+        double amount = subtotal + shippingFee;
+
+        System.out.println("----------------------");
+        System.out.printf("Subtotal %.0f\n", subtotal);
+        System.out.printf("Shipping %.0f\n", shippingFee);
+        System.out.printf("Amount %.0f\n", amount);
     }
 }
