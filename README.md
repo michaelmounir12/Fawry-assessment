@@ -1,63 +1,111 @@
-1. 📦 Define Products with Dynamic Behaviors
-Products may have different behaviors:
+# 🛒 Java Shopping Cart System
 
-Shippable → needs shipping, has weight
+A Java console-based system simulating a simple shopping cart and checkout process. Demonstrates object-oriented principles including interfaces, encapsulation, exception handling, and separation of concerns.
 
-Expirable → has expiry, may become invalid
+---
 
-Example:
+## ✨ Features
 
-java
-Copy
-Edit
-Product cheese = new ExpirableShippableProduct("Cheese", 10.0, 5, LocalDate.of(2025, 1, 1), 2.0);
-Product tv = new ShippableProduct("TV", 1000.0, 2, 15.0);
-Product scratchCard = new Product("Mobile Card", 50.0, 10);
-You can combine behaviors using interfaces and concrete implementations.
+* Add various products to a cart
+* Handle **stock validation** when adding items
+* Detect **expired products** before checkout
+* Handle **shippable products** with weight-based summaries
+* Perform complete **checkout** flow with balance deduction
 
-2. 🛒 Add Items to Cart with Validation
-java
-Copy
-Edit
-Cart cart = new Cart();
-cart.addItem(cheese, 2); // Adds 2 Cheese
-cart.addItem(tv, 1);     // Adds 1 TV
-If requested quantity exceeds stock, an exception is thrown.
+---
 
-Cart holds CartItem objects tracking quantity and product.
+## 📅 How to Run
 
-3. ✅ Checkout with Policies & Service Integration
-java
-Copy
-Edit
-CheckoutService checkoutService = new CheckoutServiceImpl(new DefaultShippingService());
-checkoutService.checkout(cart);
-What happens at checkout:
+### Requirements
 
-Verifies all items in stock
+* Java 11+
 
-Verifies none are expired
+### Compile and Execute
 
-Ships all shippable items via ShippingService
+```bash
+javac *.java
+java Main
+```
 
-Decrements stock quantities
+---
 
-4. 🚚 Shipping Service (Pluggable via DI)
-java
-Copy
-Edit
-ShippingService shippingService = new DefaultShippingService();
-shippingService.ship(cart.getShippableItems());
-This design allows for:
+## 📃 Product Types
 
-Swapping in mock shipping services for testing
+```java
+Product tv = new ShippableProduct("TV", 500.0, 5, null, 10.0);
+Product cheese = new ShippableProduct("Cheese", 20.0, 10, LocalDate.now().plusDays(5), 1.5);
+Product scratchCard = new Product("Mobile Scratch Card", 10.0, 50, null);
+Product expiredBiscuits = new ShippableProduct("Biscuits", 5.0, 30, LocalDate.now().minusDays(1), 0.3);
+```
 
-Extending support to external APIs (FedEx, Aramex, etc.)
+* `ShippableProduct` implements `Shippable`
+* `Product` may or may not be perishable (based on expiration date)
 
-5. 📈 Expiry Validation
-java
-Copy
-Edit
-boolean isExpired = ((Expirable) cheese).isExpired();
-You can dynamically test if a product has expired before checkout, which prevents accidental purchase of expired products.
+---
+
+## 📄 Cart System
+
+### Add to Cart
+
+```java
+customer.addToCart(tv, 1);
+customer.addToCart(cheese, 2);
+```
+
+* Throws exception if stock is insufficient
+* Supports quantity merging for same product
+
+### Get Cart Details
+
+```java
+cart.getSubtotal();
+cart.getShippableItems();
+```
+
+---
+
+## 💸 Checkout Flow
+
+```java
+customer.checkout();
+```
+
+Checks:
+
+* Cart is not empty
+* No expired products
+* Stock availability
+* Deducts balance from customer
+* Triggers shipment for shippable items
+
+### Shipping Summary
+
+```java
+** Shipment notice **
+1x TV 10000g
+2x Cheese 3000g
+Total package weight 13.0kg
+```
+
+---
+
+## 💡 Design Highlights
+
+* `CartItem` holds `Product` and quantity
+* `Shippable` interface isolates shipping behavior
+* `ShippingService` computes and prints total weight
+* `Customer` class orchestrates the interaction
+
+---
+
+## 🤖 Sample Output
+
+```
+** Shipment notice **
+1x TV 10000g
+2x Cheese 3000g
+Total package weight 13.0kg
+```
+
+
 
